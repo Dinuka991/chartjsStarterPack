@@ -12,4 +12,10 @@ export class CovidService {
   getCovidStatics(): Observable<any>{
         return this.http.get<any>('https://hpb.health.gov.lk/api/get-current-statistical/')
   }
+  getCountries(): Observable<any>{
+    return this.http.get<any>('https://api.covid19api.com/countries')
 }
+}
+
+
+

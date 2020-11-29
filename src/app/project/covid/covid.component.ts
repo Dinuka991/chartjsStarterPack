@@ -7,6 +7,11 @@ import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material/table';
 import { ChartType } from 'chart.js';
 import { MultiDataSet  } from 'ng2-charts';
+import {FormControl} from '@angular/forms';
+import {Observable} from 'rxjs';
+import {map, startWith} from 'rxjs/operators';
+import { FormBuilder } from '@angular/forms';
+
 
 @Component({
   selector: 'app-covid',
@@ -15,7 +20,9 @@ import { MultiDataSet  } from 'ng2-charts';
 })
 export class CovidComponent implements OnInit {
 
- 
+  myControl = new FormControl();
+  options: string[] = ['One', 'Two', 'Three'];
+  filteredOptions: Observable<string[]>;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   displayedColumns: string[] = ['date', 'count'];
   dataSource = new MatTableDataSource<PCR>();
@@ -54,16 +61,39 @@ export class CovidComponent implements OnInit {
   totalCount: number;
   pageSize: number;
 
-  constructor(private covidService: CovidService) { }
+  constructor(private covidService: CovidService ) { }
 
   ngOnInit() {
 
+
+
+    this.filteredOptions = this.myControl.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filter(value))
+    );
+    
+
     this.getCovidStatics();
+    this.getCountries();
 
     
   }
+  private _filter(value: string): string[] {
+    const filterValue = value.toLowerCase();
+
+    return this.options.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
+  }
+ 
+
+ 
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
+  }
+  getCountries(){
+     this.covidService.getCountries()
+            .subscribe( (data: any) => {
+              console.log(data);
+            })
   }
   getCovidStatics(){
     this.covidService.getCovidStatics()

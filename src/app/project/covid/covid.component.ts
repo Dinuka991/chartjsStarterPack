@@ -7,10 +7,9 @@ import {MatPaginator} from '@angular/material/paginator';
 import {MatTableDataSource} from '@angular/material/table';
 import { ChartType } from 'chart.js';
 import { MultiDataSet  } from 'ng2-charts';
-import {FormControl} from '@angular/forms';
 import {Observable} from 'rxjs';
 import {map, startWith} from 'rxjs/operators';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder ,FormGroup , FormControl } from '@angular/forms';
 
 
 @Component({
@@ -20,8 +19,9 @@ import { FormBuilder } from '@angular/forms';
 })
 export class CovidComponent implements OnInit {
 
-  myControl = new FormControl();
-  options: string[] = ['One', 'Two', 'Three'];
+
+  options: string[] = [];
+  countries: any;
   filteredOptions: Observable<string[]>;
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   displayedColumns: string[] = ['date', 'count'];
@@ -61,23 +61,26 @@ export class CovidComponent implements OnInit {
   totalCount: number;
   pageSize: number;
 
-  constructor(private covidService: CovidService ) { }
+  constructor(private covidService: CovidService , private fb: FormBuilder ) { }
 
   ngOnInit() {
 
 
-
-    this.filteredOptions = this.myControl.valueChanges.pipe(
+    //this.options = this.countries;
+    this.filteredOptions = this.covidForm.get('countryName').valueChanges.pipe(
       startWith(''),
       map(value => this._filter(value))
     );
     
-
+    
     this.getCovidStatics();
     this.getCountries();
 
     
   }
+  covidForm = this.fb.group({
+    countryName: ['']
+  })
   private _filter(value: string): string[] {
     const filterValue = value.toLowerCase();
 
@@ -92,7 +95,11 @@ export class CovidComponent implements OnInit {
   getCountries(){
      this.covidService.getCountries()
             .subscribe( (data: any) => {
-              console.log(data);
+              console.log(data)
+             
+              console.log(data.map(a => a.Country));
+              this.countries = data.map(a => a.Country);
+              this.options = this.countries;
             })
   }
   getCovidStatics(){
